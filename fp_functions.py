@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
 from scipy.interpolate import interp1d
 
+# Einlesen der CSV-Daten und Rückgabe der Zeitreihe, vertikalen GRF und CoP x/y
 
 def load_force_data(filepath):
     df = pd.read_csv(filepath, delimiter=';', encoding='utf-8', decimal=',', skiprows=3, low_memory=False)
@@ -14,33 +15,39 @@ def load_force_data(filepath):
     cop_y = df["Force plate group-Center of pressure-y (mm)"]
     return time, grf_z, cop_x, cop_y
 
+# Detektion der Landezeitpunkte (Peaks) über GRF > 2× Körpergewicht
 
 def detect_landing_peaks(grf_z, time, mass, g=9.81):
     threshold = 2 * mass * g
     peaks, _ = find_peaks(grf_z, height=threshold)
     return peaks
 
+# Speichern der Landezeitpunkte als CSV-Datei
 
 def save_peak_times(results, output_file="landing_peaks.csv"):
     df = pd.DataFrame(results, columns=["Filename", "LandingTime_s"])
     df.to_csv(output_file, index=False, encoding='utf-8')
     print(f"\n✅ Landezeitpunkte gespeichert in: {output_file}")
 
+# Normalisierung von Signalwerten ab dem Landepeak
 
 def normalize_from_peak(signal, peak_index):
     return signal[peak_index:] - signal[peak_index]
 
+# Zeitachse von Peak zu 0 setzen und auf 100 % normieren
 
 def normalize_time_from_peak(time, peak_index):
     t = time[peak_index:] - time[peak_index]
     return t / t.max() * 100
 
+# Interpolation der Signale auf 100 gleichverteilte Zeitpunkte
 
 def resample_to_100(time, signal):
     f = interp1d(time, signal, kind='linear', fill_value='extrapolate')
     time_uniform = np.linspace(0, 100, 100)
     return f(time_uniform)
 
+# Berechnung von Mittelwert, Minimum, Maximum und RMS eines Signals
 
 def compute_cop_metrics(signal):
     mean = np.mean(signal)
@@ -49,6 +56,7 @@ def compute_cop_metrics(signal):
     rms = np.sqrt(np.mean((signal - mean) ** 2))
     return mean, max_, min_, rms
 
+# Plotten und Speichern der CoP-Signale (je 3 Sprünge pro Zustand)
 
 def plot_cop_signals(signals, times, colors, title_prefix, rms_values, ylabel, person_label):
     ymin = min([s.min() for s in signals]) - 5
@@ -69,7 +77,6 @@ def plot_cop_signals(signals, times, colors, title_prefix, rms_values, ylabel, p
         plt.grid()
         plt.legend()
 
-
         plt.tight_layout()
         title_parts = title_prefix.split()
         testphase = title_parts[0] 
@@ -86,7 +93,7 @@ def plot_cop_signals(signals, times, colors, title_prefix, rms_values, ylabel, p
         #plt.savefig(filepath, bbox_inches='tight', dpi=300)
         # plt.show()
 
-
+# Verarbeitung und Visualisierung eines CoP-Datensatzes
 
 def process_cop_set(cop_signals, time_signals, peak_indices, label, person):
     ylabel = 'x' if 'CoP X' in label else 'y'
@@ -97,7 +104,6 @@ def process_cop_set(cop_signals, time_signals, peak_indices, label, person):
     rms_values = [m[3] for m in metrics]
     plot_cop_signals(signals_norm, times_norm, ['blue', 'red', 'green'], label, rms_values, ylabel=ylabel, person_label=person)
     return rms_values
-
 
 # -----------------------------
 # Parameter je nach Person anpassen
