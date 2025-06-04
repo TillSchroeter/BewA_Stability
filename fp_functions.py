@@ -69,17 +69,23 @@ def plot_cop_signals(signals, times, colors, title_prefix, rms_values, ylabel, p
         plt.grid()
         plt.legend()
 
-    plt.tight_layout()
-    title_parts = title_prefix.split()
-    testphase = title_parts[0] 
-    side = "Links" if "Li" in title_prefix else "Rechts"
-    cop_label = f"CoP ({ylabel})"
-    suptitle_text = f"Person {person_label} – {testphase} {side} {cop_label} – ⌀ RMS: {np.mean(rms_values):.2f}"
-    plt.suptitle(suptitle_text, fontsize=12, y=0.96)
-    plt.tight_layout(rect=[0, 0, 1, 0.95])
-    filename = f"{person_label}_{title_prefix.replace(' ', '_')}_cop_{ylabel}.png"
-    #plt.savefig(filename, bbox_inches='tight', dpi=300)
-    #plt.show()
+
+        plt.tight_layout()
+        title_parts = title_prefix.split()
+        testphase = title_parts[0] 
+        side = "Links" if "Li" in title_prefix else "Rechts"
+        cop_label = f"CoP ({ylabel})"
+        suptitle_text = f"Person {person_label} – {testphase} {side} {cop_label} – ⌀ RMS: {np.mean(rms_values):.2f}"
+        plt.suptitle(suptitle_text, fontsize=12, y=0.96)
+        plt.tight_layout(rect=[0, 0, 1, 0.95])
+
+        # Save files in folder "Plot_Bilder_CoP"
+        os.makedirs("Plot_Bilder_CoP", exist_ok=True)
+        filename = f"{person_label}_{title_prefix.replace(' ', '_')}_cop_{ylabel}.png"
+        filepath = os.path.join("Plot_Bilder_CoP", filename)
+        #plt.savefig(filepath, bbox_inches='tight', dpi=300)
+        # plt.show()
+
 
 
 def process_cop_set(cop_signals, time_signals, peak_indices, label, person):
