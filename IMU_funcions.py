@@ -232,3 +232,41 @@ def calculate_mean_stable_time(DATA, KEYS, Parameter):
     li_post_mean = np.mean([DATA[key][Parameter] for key in li_post ])
 
     return re_pre_mean, re_post_mean, li_pre_mean, li_post_mean
+
+
+### Werte der Tabelle in CSV-Datei schreiben
+def write_time_differences_to_csv(csv_path, re_pre, re_post, li_pre, li_post, Person):
+    """
+    Speichert die vier Mittelwerte der Time Difference in eine CSV-Datei.
+    
+    Args:
+        csv_path (str): Pfad zur CSV-Datei.
+        re_pre (float): Mittelwert Re_Pre.
+        re_post (float): Mittelwert Re_Post.
+        li_pre (float): Mittelwert Li_Pre.
+        li_post (float): Mittelwert Li_Post.
+    """
+
+    # Neue Daten vorbereiten
+    new_data = {
+        "Sprünge": [Person + "_Re_Pre", Person + "_Re_Post", Person + "_Li_Pre", Person + "_Li_Post"],
+        "Time Difference": [re_pre, re_post, li_pre, li_post]
+    }
+
+    new_df = pd.DataFrame(new_data)
+
+    # Bestehende Datei lesen, wenn sie existiert
+    
+    existing_df = pd.read_csv(csv_path, sep=";", encoding="utf-8", decimal=",")
+        
+        # Überschreibe nur die Zeilen mit gleichen "Sprünge"-Werten oder hänge an
+    for i, row in new_df.iterrows():
+        if row["Sprünge"] in existing_df["Sprünge"].values:
+                existing_df.loc[existing_df["Sprünge"] == row["Sprünge"], "Time Difference"] = row["Time Difference"]
+        else:
+                existing_df = pd.concat([existing_df, pd.DataFrame([row])], ignore_index=True)
+
+
+    # Speichern
+    existing_df.to_csv(csv_path, sep=";", index=False, encoding="utf-8", decimal=",")
+    print(f"✅ Werte wurden in '{csv_path}' gespeichert.")
