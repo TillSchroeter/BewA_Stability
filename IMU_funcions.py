@@ -5,8 +5,33 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
+### Landen Peaks laden
+def load_landing_peaks_for_subject(csv_path, subject_letter):
+    """
+    Lädt die LandingTimes aus einer CSV-Datei und erstellt ein Dictionary für ein bestimmtes Subjekt (A, B, C, D).
+    """
+
+    df = pd.read_csv(csv_path)                  # Einlesen der CSV-Datei mit Landing Peaks
+
+    landing_peaks = {}                          # Dictionary für Landing Peaks initialisieren
+
+    for _, row in df.iterrows():                # Iteration über jede Zeile der DataFrame
+        filename = row["Filename"]              # Dateiname aus der Zeile extrahieren
+        landing_time = row["LandingTime_s"]
+
+        # Nur Dateien des gewünschten Subjekts berücksichtigen
+        if f"_{subject_letter}_" in filename:                   # Beispiel: "Pre_A_Li_1.csv" → Teile in ["Pre", "A", "Li", "1.csv"]
+            parts = filename.replace(".csv", "").split("_")
+            if len(parts) == 4:
+                phase, _, side, number = parts
+                key = f"{side}_{number}_{phase}"
+                landing_peaks[key] = round(landing_time, 3)     # auf 3 Nachkommastellen runden
+
+    return landing_peaks
+
+
 ### Funktionen Datei struktur
-def Data_strucureture(C_Daten_file_map, landing_peaks, columns_to_extract):
+def Data_structure (C_Daten_file_map, landing_peaks, columns_to_extract):
     """
     Gibt die Datenstruktur zurück, die alle relevanten Daten enthält.
     """
