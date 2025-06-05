@@ -56,7 +56,7 @@ def compute_cop_metrics(signal):
     rms = np.sqrt(np.mean((signal - mean) ** 2))
     return mean, max_, min_, rms
 
-# Plotten und Speichern der CoP-Signale (je 3 Sprünge pro Zustand)
+# Plotten und Speichern der CoP-Signale (je 3 Sprüngen pro Zustand)
 
 def plot_cop_signals(signals, times, colors, title_prefix, rms_values, ylabel, person_label):
     ymin = min([s.min() for s in signals]) - 5
@@ -86,7 +86,6 @@ def plot_cop_signals(signals, times, colors, title_prefix, rms_values, ylabel, p
         plt.suptitle(suptitle_text, fontsize=12, y=0.96)
         plt.tight_layout(rect=[0, 0, 1, 0.95])
 
-        # Save files in folder "Plot_Bilder_CoP"
         os.makedirs("Plot_Bilder_CoP", exist_ok=True)
         filename = f"{person_label}_{title_prefix.replace(' ', '_')}_cop_{ylabel}.png"
         filepath = os.path.join("Plot_Bilder_CoP", filename)
@@ -106,8 +105,6 @@ def process_cop_set(cop_signals, time_signals, peak_indices, label, person):
     return rms_values
 
 # -----------------------------
-# Parameter je nach Person anpassen
-# -----------------------------
 personen = {
     "A": 70,
     "B": 77,
@@ -119,10 +116,8 @@ conditions = ["Pre", "Post"]
 sides = ["Li", "Re"]
 spruenge = ["1", "2", "3"]
 
-# -----------------------------
-# Hauptschleife über Personen
-# -----------------------------
-landing_results = []  # Sammeln der Landezeiten für alle Dateien
+landing_results = []
+cop_rms_summary = []
 
 for person, mass in personen.items():
     base_dir = f"{person}_Daten"
@@ -148,8 +143,6 @@ for person, mass in personen.items():
                         continue
 
                     peak_index = detected_peaks[0]
-
-                    # für spätere Analyse speichern
                     landing_time = time[peak_index]
                     landing_results.append([filename, landing_time])
 
@@ -167,12 +160,22 @@ for person, mass in personen.items():
                 continue
 
             print(f"\n🔹 {condition}-{side} – CoP X")
-            process_cop_set(copx, times, peaks, f"{condition}-Testung {side} CoP X", person)
+            rms_x = process_cop_set(copx, times, peaks, f"{condition}-Testung {side} CoP X", person)
 
             print(f"\n🔹 {condition}-{side} – CoP Y")
-            process_cop_set(copy, times, peaks, f"{condition}-Testung {side} CoP Y", person)
+            rms_y = process_cop_set(copy, times, peaks, f"{condition}-Testung {side} CoP Y", person)
 
-# -----------------------------
-# Landing-Zeitpunkte speichern
-# -----------------------------
+            avg_rms_x = np.mean(rms_x)
+            avg_rms_y = np.mean(rms_y)
+            rms_norm = np.sqrt(avg_rms_x ** 2 + avg_rms_y ** 2)
+
+            kombi_label = f"{person}_{side}_{condition}"
+            cop_rms_summary.append([kombi_label, rms_norm])
+
 save_peak_times(landing_results)
+
+# Speichern der normierten RMS-Werte
+rms_df = pd.DataFrame(cop_rms_summary, columns=["Kombination", "RMS_norm"])
+rms_df["RMS_norm"] = rms_df["RMS_norm"].map(lambda x: f"{x:.2f}".replace(".", ","))
+rms_df.to_csv("cop_rms_normiert.csv", index=False, sep=";", encoding="utf-8")
+print("\n✅ Normierte RMS-Werte gespeichert in: cop_rms_normiert.csv")
