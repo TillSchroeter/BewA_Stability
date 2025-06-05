@@ -1,5 +1,5 @@
 import pandas as pd
-df = pd.read_csv("C_Daten_Schröter_Till/2025-04-11-11-05_Pre_C_Re_3.csv",delimiter=';',encoding='utf-8',decimal=',', skiprows=3)  # 👈 Wichtig: Komma als Dezimaltrennzeichen
+df = pd.read_csv("C_Daten/Pre_C_Re_3.csv",delimiter=';',encoding='utf-8',decimal=',', skiprows=3)  # 👈 Wichtig: Komma als Dezimaltrennzeichen
 
 ### Gelenkswinkel-Spalten
 # Gelenkwinkel – linkes Bein
