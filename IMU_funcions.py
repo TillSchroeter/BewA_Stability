@@ -62,6 +62,10 @@ def Data_structure (C_Daten_file_map, landing_peaks, columns_to_extract):
 
 ### Plot parameter festlegen
 def get_keys_and_direction(seite: str, phase: str):
+    """
+    Gibt die relevanten Keys und die Richtung (RT oder LT) für die angegebene Seite und Phase zurück.
+    """
+
     if seite not in ("LT", "RT"):
         raise ValueError("Seite muss 'LT' oder 'RT' sein.")
     if phase not in ("Pre", "Post"):
@@ -82,6 +86,9 @@ def get_keys_and_direction(seite: str, phase: str):
 
 ### Farben für die Plots
 def get_colors():
+    """
+    Gibt eine Liste von Farben für die Plots zurück.
+    """
     colors = ['blue', 'red', 'green']
     color_peak = 'black'
     color_stable = 'grey'
@@ -123,6 +130,9 @@ def find_stable_time(time, signal, peak_time, slope_threshold, min_consecutive):
 
 ### Funktion für Boxplots
 def plot_boxplot(DATA, title, y_label, data_key, folder_pictures_):
+    """
+    Erstellt Boxplots für die Zeitdifferenzen zwischen den Seiten und Phasen.
+    """
     # Liste für DataFrame-Zeilen
     rows = []
 
@@ -238,13 +248,6 @@ def calculate_mean_stable_time(DATA, KEYS, Parameter):
 def write_time_differences_to_csv(csv_path, re_pre, re_post, li_pre, li_post, Person):
     """
     Speichert die vier Mittelwerte der Time Difference in eine CSV-Datei.
-    
-    Args:
-        csv_path (str): Pfad zur CSV-Datei.
-        re_pre (float): Mittelwert Re_Pre.
-        re_post (float): Mittelwert Re_Post.
-        li_pre (float): Mittelwert Li_Pre.
-        li_post (float): Mittelwert Li_Post.
     """
 
     # Neue Daten vorbereiten
