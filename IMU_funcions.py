@@ -20,11 +20,11 @@ def load_landing_peaks_for_subject(csv_path, subject_letter):
         landing_time = row["LandingTime_s"]
 
         # Nur Dateien des gewünschten Subjekts berücksichtigen
-        if f"_{subject_letter}_" in filename:                   # Beispiel: "Pre_A_Li_1.csv" → Teile in ["Pre", "A", "Li", "1.csv"]
+        if f"_{subject_letter}_" in filename:                   # Beispiel: "Pre_A_Li_1.csv" --> Teile in ["Pre", "A", "Li", "1.csv"]
             parts = filename.replace(".csv", "").split("_")
             if len(parts) == 4:
                 phase, _, side, number = parts
-                key = f"{side}_{number}_{phase}"
+                key = f"{side}_{number}_{phase}"                # Erstellen des Schlüssels im Format "Li_1_Pre"
                 landing_peaks[key] = round(landing_time, 3)     # auf 3 Nachkommastellen runden
 
     return landing_peaks
@@ -43,7 +43,7 @@ def Data_structure (C_Daten_file_map, landing_peaks, columns_to_extract):
 
         # Peak-Zeit ermitteln
         peak_time = landing_peaks[key]
-        cutoff_time = peak_time + 3.0
+        cutoff_time = peak_time + 3.0           
 
         # Filter anwenden: alle Zeilen bis 3 Sekunden nach Peak
         df = df[df["time"] <= cutoff_time].reset_index(drop=True)
@@ -61,7 +61,7 @@ def Data_structure (C_Daten_file_map, landing_peaks, columns_to_extract):
 
 
 ### Plot parameter festlegen
-def get_keys_and_direction(seite: str, phase: str):
+def get_keys_and_direction(seite, phase):
     """
     Gibt die relevanten Keys und die Richtung (RT oder LT) für die angegebene Seite und Phase zurück.
     """
@@ -104,27 +104,27 @@ def find_stable_time(time, signal, peak_time, slope_threshold, min_consecutive):
     """
     # Nur Daten nach dem Peak betrachten
     mask = time > peak_time
-    time_post = time[mask].reset_index(drop=True)
-    signal_post = signal[mask].reset_index(drop=True)
+    time_post = time[mask].reset_index(drop=True)           # zeit mit maske filtern und Index zurücksetzen
+    signal_post = signal[mask].reset_index(drop=True)       # Signal mit maske filtern und Index zurücksetzen
 
-    if len(time_post) < min_consecutive:
+    if len(time_post) < min_consecutive:                    # Wenn nicht genug Datenpunkte nach dem Peak vorhanden sind
         return np.nan
 
     # Steigungen berechnen
-    slopes = np.gradient(signal_post, time_post)
-    is_stable = np.abs(slopes) < slope_threshold
+    slopes = np.gradient(signal_post, time_post)            # Berechnung der Steigung des Signals (steigung pro sekunde)        
+    is_stable = np.abs(slopes) < slope_threshold            # Überprüfen, ob die Steigung unter dem Schwellenwert liegt --> dann steigung klein genug und stabil (Boolean Array)
 
     # Finde erste Phase mit `min_consecutive` stabilen Werten
     count = 0
     for i in range(len(is_stable)):
-        if is_stable[i]:
+        if is_stable[i]:                                    # Wenn is_stable[i] True ist, dann ist die Steigung unterhalb des Schwellenwerts und count erhöhen
             count += 1
-            if count >= min_consecutive:
+            if count >= min_consecutive:                    # Stabiler Zeitpunkt gefunden weil count >= min_consecutive  
                 # Index am Anfang des stabilen Fensters
-                window_start_index = i - min_consecutive + 1
-                return time_post[window_start_index]
+                window_start_index = i - min_consecutive + 1 # erstes Element des stabilen Fensters
+                return time_post[window_start_index]         # Rückgabe des Zeitpunkts des stabilen Fensters in "time"
         else:
-            count = 0
+            count = 0                                       # Wenn die Steigung nicht stabil ist, Zähler zurücksetzen
 
     return np.nan
 
@@ -204,7 +204,7 @@ def calculate_std_post_stable(data, keys, RT_joint, LT_joint, window_seconds=3.0
             std_value = np.nan
         else:
             # Signal nach stable_time im definierten Zeitfenster
-            mask = (time >= stable_time) & (time <= stable_time + window_seconds)
+            mask = (time >= stable_time) & (time <= stable_time + window_seconds)   # Zeitfenster von 3 Sekunden nach dem stabilen Zeitpunkt
             signal = df[joint][mask]
             std_value = np.std(signal)
 
@@ -216,7 +216,7 @@ def calculate_std_post_stable(data, keys, RT_joint, LT_joint, window_seconds=3.0
 ### Funkktion zum Berechnen des Durchschnitts
 def calculate_mean_stable_time(DATA, KEYS, Parameter):
     """
-    Berechnet den Durchschnitt der stabilen Zeiten für die angegebenen Keys.
+    Berechnet den Durchschnitt des Parameters für die angegebenen Keys.
     """
     re_pre = []
     re_post = []
